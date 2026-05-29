@@ -188,7 +188,6 @@ function gameLoop() {
 
   requestAnimationFrame(gameLoop);
 }
-
 window.onload = () => {
   canvas = document.getElementById("game");
   ctx = canvas.getContext("2d");
@@ -198,6 +197,7 @@ window.onload = () => {
 
   gameLoop();
 };
+
 function findSpawn() {
   for (let i = 0; i < map.length; i++) {
     for (let j = 0; j < map[i].length; j++) {
@@ -208,6 +208,7 @@ function findSpawn() {
     }
   }
 }
+
 function BuildMap(canvas, ctx) {
   canvas.width = map[0].length * tileSize;
   canvas.height = map.length * tileSize;
@@ -223,11 +224,13 @@ function BuildMap(canvas, ctx) {
     }
   }
 }
+
 function drawPlayer() {
   ctx.fillStyle = "green";
 
   ctx.fillRect(player.x, player.y, player.width, player.height);
 }
+
 function isWall(x, y) {
   const left = Math.floor(x / tileSize);
   const right = Math.floor((x + player.width - 1) / tileSize);
@@ -241,6 +244,7 @@ function isWall(x, y) {
     map[bottom]?.[right] === 0
   );
 }
+
 function MovePlayer() {
   let nextX = player.x;
   let nextY = player.y;
@@ -265,8 +269,6 @@ function MovePlayer() {
   if (!isWall(nextX, player.y)) {
     player.x = nextX;
   }
-
- 
   if (!isWall(player.x, nextY )) {
     player.y = nextY;
   }
