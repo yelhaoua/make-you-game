@@ -1,3 +1,5 @@
+import MovePlayer from "./moveplayer.js";
+
 export default function BuildMap(canvas, ctx) {
   const map = [
     [
@@ -5,11 +7,59 @@ export default function BuildMap(canvas, ctx) {
       0,
     ],
     [
-      0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      0,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      "g",
+      "g",
+      "g",
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
       0,
     ],
     [
-      0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      1,
+      1,
+      "g",
+      1,
+      1,
+      1,
+      1,
+      0,
+      1,
+      0,
+      1,
       0,
     ],
     [
@@ -57,7 +107,31 @@ export default function BuildMap(canvas, ctx) {
       0,
     ],
     [
-      0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1,
+      0,
+      1,
+      0,
+      0,
+      1,
+      1,
+      1,
+      0,
+      "p",
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1,
+      1,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      1,
       0,
     ],
     [
@@ -77,20 +151,32 @@ export default function BuildMap(canvas, ctx) {
       0,
     ],
   ];
+  const player = {};
   const tileSize = 35;
   canvas.width = map[0].length * tileSize;
   canvas.height = map.length * tileSize;
   for (let i = 0; i < map.length; i++) {
     for (let j = 0; j < map[i].length; j++) {
-      console.log("hna");
-
       if (map[i][j] === 0) {
         ctx.fillStyle = "blue";
       }
       if (map[i][j] === 1) {
         ctx.fillStyle = "black";
       }
+      if (map[i][j] === "p") {
+        ctx.fillStyle = "green";
+        player.x = i;
+        player.y = j;
+        player.width = tileSize;
+        player.height = tileSize;
+      }
+      if (map[i][j] === "g") {
+        ctx.fillStyle = "yellow";
+      }
       ctx.fillRect(j * tileSize, i * tileSize, tileSize, tileSize);
     }
   }
+
+  return player;
+  // MovePlayer(player);
 }
