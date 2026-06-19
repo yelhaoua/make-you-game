@@ -89,20 +89,20 @@ function loadMap() {
       const y = r * tileSize;
 
       if (tileChar === "X") {
-        const wall = new DOMBlock("wall", x, y, "./wall.png");
+        const wall = new DOMBlock("wall", x, y, "./assets/imgs/wall.png");
         walls.add(wall);
       } else if (["b", "o", "p", "r"].includes(tileChar)) {
-        let ghostImg = "./redGhost.png";
-        if (tileChar === "b") ghostImg = "./blueGhost.png";
-        if (tileChar === "o") ghostImg = "./orangeGhost.png";
-        if (tileChar === "p") ghostImg = "./pinkGhost.png";
+        let ghostImg = "./assets/imgs/redGhost.png";
+        if (tileChar === "b") ghostImg = "./assets/imgs/blueGhost.png";
+        if (tileChar === "o") ghostImg = "./assets/imgs/orangeGhost.png";
+        if (tileChar === "p") ghostImg = "./assets/imgs/pinkGhost.png";
 
         const ghost = new DOMBlock(`ghost g-${tileChar}`, x, y, ghostImg);
         ghost.ghostType = tileChar;
         ghosts.add(ghost);
         ghost.changeDirection(directions[Math.floor(Math.random() * 4)]);
       } else if (tileChar === "P") {
-        pacman = new DOMBlock("pacman", x, y, "./pacmanRight.png");
+        pacman = new DOMBlock("pacman", x, y, "./assets/imgs/pacmanRight.png");
       } else if (tileChar === " ") {
         const food = new DOMBlock("food", x + 14, y + 14, null, 4, 4);
         foods.add(food);
@@ -204,10 +204,10 @@ function handlePacmanTurning() {
   }
 
   // Update sprite animation orientations cleanly
-  if (pacman.direction === "U") pacman.updateImage("./pacmanUp.png");
-  else if (pacman.direction === "D") pacman.updateImage("./pacmanDown.png");
-  else if (pacman.direction === "L") pacman.updateImage("./pacmanLeft.png");
-  else if (pacman.direction === "R") pacman.updateImage("./pacmanRight.png");
+  if (pacman.direction === "U") pacman.updateImage("./assets/imgs/pacmanUp.png");
+  else if (pacman.direction === "D") pacman.updateImage("./assets/imgs/pacmanDown.png");
+  else if (pacman.direction === "L") pacman.updateImage("./assets/imgs/pacmanLeft.png");
+  else if (pacman.direction === "R") pacman.updateImage("./assets/imgs/pacmanRight.png");
 }
 
 function handlePacmanMovement() {
