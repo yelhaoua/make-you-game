@@ -37,7 +37,7 @@ const tileMap = [
   "X XX X XXXXX X XX X",
   "X    X       X    X",
   "XXXX XXXX XXXX XXXX",
-  "OOOX X       X XOOO",
+  "XXXX X       X XXXX",
   "XXXX X XXrXX X XXXX",
   "O      XbpoX      O",
   "XXXX X XXXXX X XXXX",
@@ -204,10 +204,14 @@ function handlePacmanTurning() {
   }
 
   // Update sprite animation orientations cleanly
-  if (pacman.direction === "U") pacman.updateImage("./assets/imgs/pacmanUp.png");
-  else if (pacman.direction === "D") pacman.updateImage("./assets/imgs/pacmanDown.png");
-  else if (pacman.direction === "L") pacman.updateImage("./assets/imgs/pacmanLeft.png");
-  else if (pacman.direction === "R") pacman.updateImage("./assets/imgs/pacmanRight.png");
+  if (pacman.direction === "U")
+    pacman.updateImage("./assets/imgs/pacmanUp.png");
+  else if (pacman.direction === "D")
+    pacman.updateImage("./assets/imgs/pacmanDown.png");
+  else if (pacman.direction === "L")
+    pacman.updateImage("./assets/imgs/pacmanLeft.png");
+  else if (pacman.direction === "R")
+    pacman.updateImage("./assets/imgs/pacmanRight.png");
 }
 
 function handlePacmanMovement() {
@@ -248,7 +252,6 @@ function handleGhostMovement() {
     ghost.x += ghost.velocityX;
     ghost.y += ghost.velocityY;
 
-    // --- TELEPORT WARPING SYSTEM FOR GHOSTS ---
     if (ghost.x + ghost.width < 0) {
       ghost.x = mapWidth - checkSpeedFallbackOffset(ghost.velocityX);
     } else if (ghost.x > mapWidth) {
@@ -263,13 +266,16 @@ function handleGhostMovement() {
       }
     }
 
+    // التعديل هنا: التخلص من الـ alert اللعينة
     if (collision(pacman, ghost)) {
       lives--;
       document.getElementById("lives-val").innerText = lives;
+
       if (lives <= 0) {
         gameOver = true;
-        alert("Game Over!");
-        resetGameCompletely();
+        // بدلاً من alert("Game Over!"): نقوم بإظهار قائمة اللعبة وتحديث النص لـ Game Over
+        document.getElementById("pause-menu").classList.remove("hidden");
+        // إذا كان لديك عنصر عنوان للقائمة يمكنك تغيير نصه إلى "Game Over!" برمجياً هنا
       } else {
         resetPositions();
       }
