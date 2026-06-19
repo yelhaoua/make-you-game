@@ -36,13 +36,13 @@ const tileMap = [
   "X                 X",
   "X XX X XXXXX X XX X",
   "X    X       X    X",
-  "XXXX XXXX XXXX XXXX",
-  "XXXX X       X XXXX",
-  "XXXX X XXrXX X XXXX",
-  "O      XbpoX      O",
-  "XXXX X XXXXX X XXXX",
-  "XXXX X       X XXXX",
-  "XXXX X XXXXX X XXXX",
+  "X XX XXXX XXXX XX X",
+  "X XX X       X XX X",
+  "X XX X XXrXX X XX X",
+  "X      XbpoX      X",
+  "XX X X XXXXX X X XX",
+  "XX X X       X X XX",
+  "XX X X XXXXX X X XX",
   "X        X        X",
   "X XX XXX X XXX XX X",
   "X  X     P     X  X",
@@ -114,8 +114,7 @@ function loadMap() {
 function gameLoop(currentTime) {
   let deltaTime = currentTime - lastTime;
 
-  // GUARD: Prevents Inspector slow-downs or pauses from dropping the frame counter
-  if (deltaTime > 33) deltaTime = 16.66;
+  if (deltaTime > 100) deltaTime = 16.66;
   lastTime = currentTime;
 
   frameCount++;
@@ -136,15 +135,64 @@ function gameLoop(currentTime) {
       if (timeRemaining <= 0) gameOver = true;
     }
 
+    if (timeAccumulator > physicsStep * 5) {
+      timeAccumulator = physicsStep;
+    }
+
     while (timeAccumulator >= physicsStep) {
       updatePhysics();
       timeAccumulator -= physicsStep;
     }
+
+    // تشغيل الرندرة فقط إذا كانت اللعبة تعمل وغير متوقفة لحفظ الإطارات
+    renderDOM();
   }
 
-  // Render loops continuously to maintain 60 FPS output on layout metrics
-  renderDOM();
   requestAnimationFrame(gameLoop);
+}
+
+function handleGhostMovement() {
+  const mapWidth = columnCount * tileSize;
+
+  for (let ghost of ghosts) {
+    // حل مشكلة الأداء: نتحقق أن الشبح يتحرك فعلياً وفي مركز البلاطة تماماً قبل حساب الذكاء الاصطناعي
+    const isAtTileCenter = ghost.x % tileSize === 0 && ghost.y % tileSize === 0;
+    const isMoving = ghost.velocityX !== 0 || ghost.velocityY !== 0;
+
+    if (isAtTileCenter && isMoving) {
+      chooseBalancedDirection(ghost);
+    }
+
+    ghost.x += ghost.velocityX;
+    ghost.y += ghost.velocityY;
+
+    if (ghost.x + ghost.width < 0) {
+      ghost.x = mapWidth - checkSpeedFallbackOffset(ghost.velocityX);
+    } else if (ghost.x > mapWidth) {
+      ghost.x = -ghost.width + checkSpeedFallbackOffset(ghost.velocityX);
+    }
+
+    for (let wall of walls) {
+      if (collision(ghost, wall)) {
+        ghost.x -= ghost.velocityX;
+        ghost.y -= ghost.velocityY;
+        ghost.changeDirection(directions[Math.floor(Math.random() * 4)]);
+      }
+    }
+
+    if (collision(pacman, ghost)) {
+      lives--;
+      document.getElementById("lives-val").innerText = lives;
+
+      if (lives <= 0) {
+        gameOver = true;
+        document.getElementById("pause-menu").classList.remove("hidden");
+      } else {
+        resetPositions();
+      }
+      return;
+    }
+  }
 }
 
 function updatePhysics() {
@@ -234,52 +282,6 @@ function handlePacmanMovement() {
       pacman.velocityX = 0;
       pacman.velocityY = 0;
       break;
-    }
-  }
-}
-
-function handleGhostMovement() {
-  const mapWidth = columnCount * tileSize;
-
-  for (let ghost of ghosts) {
-    if (
-      Math.round(ghost.x) % tileSize === 0 &&
-      Math.round(ghost.y) % tileSize === 0
-    ) {
-      chooseBalancedDirection(ghost);
-    }
-
-    ghost.x += ghost.velocityX;
-    ghost.y += ghost.velocityY;
-
-    if (ghost.x + ghost.width < 0) {
-      ghost.x = mapWidth - checkSpeedFallbackOffset(ghost.velocityX);
-    } else if (ghost.x > mapWidth) {
-      ghost.x = -ghost.width + checkSpeedFallbackOffset(ghost.velocityX);
-    }
-
-    for (let wall of walls) {
-      if (collision(ghost, wall)) {
-        ghost.x -= ghost.velocityX;
-        ghost.y -= ghost.velocityY;
-        ghost.changeDirection(directions[Math.floor(Math.random() * 4)]);
-      }
-    }
-
-    // التعديل هنا: التخلص من الـ alert اللعينة
-    if (collision(pacman, ghost)) {
-      lives--;
-      document.getElementById("lives-val").innerText = lives;
-
-      if (lives <= 0) {
-        gameOver = true;
-        // بدلاً من alert("Game Over!"): نقوم بإظهار قائمة اللعبة وتحديث النص لـ Game Over
-        document.getElementById("pause-menu").classList.remove("hidden");
-        // إذا كان لديك عنصر عنوان للقائمة يمكنك تغيير نصه إلى "Game Over!" برمجياً هنا
-      } else {
-        resetPositions();
-      }
-      return;
     }
   }
 }
