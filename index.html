@@ -3,6 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <title>JS DOM Pacman</title>
+    <!-- Google Fonts for retro-arcade style -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Press+Start+2P&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./assets/css/style.css" />
   </head>
   <body>
@@ -16,12 +18,39 @@
 
       <div id="board-layer"></div>
 
+      <!-- Start Screen Overlay -->
+      <div id="start-screen">
+        <div class="menu-content">
+          <h1 class="game-title">PAC-MAN</h1>
+          <p class="subtitle">RETRO ARCADE CLASSIC</p>
+          <div class="controls-info">
+            <p class="control-header">CONTROLS</p>
+            <p>WASD / Arrow Keys: Move</p>
+            <p>ESC / P: Pause</p>
+          </div>
+          <button id="btn-play" class="pulse-btn">PLAY GAME</button>
+        </div>
+      </div>
+
+      <!-- Pause Menu Overlay -->
       <div id="pause-menu" class="hidden">
-        <h1>Game Paused</h1>
-        <button id="btn-continue">Continue</button>
-        <button id="btn-restart">Restart</button>
+        <div class="menu-content">
+          <h1 class="menu-title">Paused</h1>
+          <button id="btn-continue">Continue</button>
+          <button id="btn-restart">Restart</button>
+        </div>
+      </div>
+
+      <!-- Game Over Screen Overlay -->
+      <div id="game-over-screen" class="hidden">
+        <div class="menu-content">
+          <h1 class="game-over-title">GAME OVER</h1>
+          <p class="score-display">Final Score: <span id="final-score">0</span></p>
+          <button id="btn-gameover-restart" class="pulse-btn">RESTART</button>
+        </div>
       </div>
     </div>
     <script src="./js/index.js"></script>
   </body>
 </html>
+

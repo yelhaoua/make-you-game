@@ -22,6 +22,9 @@ let timeRemaining = 120; // 2 Minutes Countdown Clock metrics
 let gameTimeAccumulator = 0;
 let isPaused = false;
 let gameOver = false;
+let gameStarted = false;
+let mapInitialized = false;
+const allFoods = [];
 
 // Entities Elements Management
 const walls = new Set();
@@ -55,9 +58,33 @@ const tileMap = [
 
 const directions = ["U", "D", "L", "R"];
 
+const imageUrls = [
+  "./assets/imgs/wall.png",
+  "./assets/imgs/cherry.png",
+  "./assets/imgs/pacmanRight.png",
+  "./assets/imgs/pacmanLeft.png",
+  "./assets/imgs/pacmanUp.png",
+  "./assets/imgs/pacmanDown.png",
+  "./assets/imgs/redGhost.png",
+  "./assets/imgs/blueGhost.png",
+  "./assets/imgs/orangeGhost.png",
+  "./assets/imgs/pinkGhost.png"
+];
+
+function preloadImages() {
+  imageUrls.forEach(url => {
+    const img = new Image();
+    img.src = url;
+    if (img.decode) {
+      img.decode().catch(err => console.log("Image decode failed", err));
+    }
+  });
+}
+
 window.onload = function () {
   boardLayer = document.getElementById("board-layer");
 
+  preloadImages();
   setupMenuListeners();
   loadMap();
 
@@ -69,18 +96,40 @@ window.onload = function () {
 };
 
 function setupMenuListeners() {
+  document.getElementById("btn-play").onclick = () => {
+    gameStarted = true;
+    document.getElementById("start-screen").classList.add("hidden");
+    resetGameCompletely();
+  };
+
   document.getElementById("btn-continue").onclick = () => togglePause(false);
+
   document.getElementById("btn-restart").onclick = () => {
     togglePause(false);
+    resetGameCompletely();
+  };
+
+  document.getElementById("btn-gameover-restart").onclick = () => {
+    document.getElementById("game-over-screen").classList.add("hidden");
     resetGameCompletely();
   };
 }
 
 function loadMap() {
+  if (mapInitialized) {
+    foods.clear();
+    for (let food of allFoods) {
+      food.domElement.style.display = '';
+      foods.add(food);
+    }
+    return;
+  }
+
   boardLayer.innerHTML = "";
   walls.clear();
   foods.clear();
   ghosts.clear();
+  allFoods.length = 0;
 
   for (let r = 0; r < rowCount; r++) {
     for (let c = 0; c < columnCount; c++) {
@@ -104,11 +153,13 @@ function loadMap() {
       } else if (tileChar === "P") {
         pacman = new DOMBlock("pacman", x, y, "./assets/imgs/pacmanRight.png");
       } else if (tileChar === " ") {
-        const food = new DOMBlock("food", x + 14, y + 14, null, 4, 4);
+        const food = new DOMBlock("food", x + 10, y + 10, "./assets/imgs/cherry.png", 12, 12);
         foods.add(food);
+        allFoods.push(food);
       }
     }
   }
+  mapInitialized = true;
 }
 
 function gameLoop(currentTime) {
@@ -124,7 +175,7 @@ function gameLoop(currentTime) {
     fpsLastTime = currentTime;
   }
 
-  if (!isPaused && !gameOver) {
+  if (gameStarted && !isPaused && !gameOver) {
     timeAccumulator += deltaTime;
     gameTimeAccumulator += deltaTime;
 
@@ -132,7 +183,9 @@ function gameLoop(currentTime) {
       timeRemaining--;
       gameTimeAccumulator -= 1000;
       updateTimerDisplay();
-      if (timeRemaining <= 0) gameOver = true;
+      if (timeRemaining <= 0) {
+        showGameOver();
+      }
     }
 
     if (timeAccumulator > physicsStep * 5) {
@@ -185,8 +238,7 @@ function handleGhostMovement() {
       document.getElementById("lives-val").innerText = lives;
 
       if (lives <= 0) {
-        gameOver = true;
-        document.getElementById("pause-menu").classList.remove("hidden");
+        showGameOver();
       } else {
         resetPositions();
       }
@@ -291,7 +343,7 @@ function handleFoodCollision() {
     if (collision(pacman, food)) {
       score += 10;
       document.getElementById("score-val").innerText = score;
-      food.domElement.remove();
+      food.domElement.style.display = 'none';
       foods.delete(food);
       break;
     }
@@ -374,6 +426,8 @@ function renderDOM() {
 }
 
 function handleKeyDown(e) {
+  if (!gameStarted || gameOver) return;
+
   if (e.code === "Escape" || e.code === "KeyP") {
     togglePause(!isPaused);
     return;
@@ -408,6 +462,14 @@ function updateTimerDisplay() {
   document.getElementById("timer-val").innerText = `${mins}:${secs}`;
 }
 
+function showGameOver() {
+  gameOver = true;
+  document.getElementById("game-over-screen").classList.remove("hidden");
+  document.getElementById("final-score").innerText = score;
+  document.getElementById("pause-menu").classList.add("hidden");
+}
+
+
 function resetPositions() {
   pacman.resetPosition();
   pacmanNextDirection = null;
@@ -422,12 +484,14 @@ function resetGameCompletely() {
   lives = 3;
   timeRemaining = 120;
   gameOver = false;
+  isPaused = false;
   document.getElementById("score-val").innerText = score;
   document.getElementById("lives-val").innerText = lives;
   updateTimerDisplay();
   loadMap();
   resetPositions();
 }
+
 
 class DOMBlock {
   constructor(
