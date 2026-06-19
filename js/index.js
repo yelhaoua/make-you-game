@@ -1,36 +1,28 @@
-//board
-let boardLayer;
 const rowCount = 21;
 const columnCount = 19;
 const tileSize = 32;
 
-// Buffered Intended Actions
-let pacmanNextDirection = null;
-
-// Performance Measurement & Loop Properties
-let lastTime = 0;
-let timeAccumulator = 0;
-const physicsStep = 1000 / 60; // Locked to 60 FPS physics execution baseline
-
-let fpsLastTime = 0;
-let frameCount = 0;
-
-// Game State Values
-let score = 0;
-let lives = 3;
-let timeRemaining = 120; // 2 Minutes Countdown Clock metrics
-let gameTimeAccumulator = 0;
-let isPaused = false;
-let gameOver = false;
-let gameStarted = false;
-let mapInitialized = false;
-const allFoods = [];
-
-// Entities Elements Management
+let boardLayer;
 const walls = new Set();
 const foods = new Set();
 const ghosts = new Set();
 let pacman;
+
+let pacmanNextDirection = null;
+
+let lastTime = 0;
+let gameTimeAccumulator = 0;
+
+let score = 0;
+let lives = 3;
+let timeRemaining = 120;
+let isPaused = false;
+let gameOver = false;
+let gameStarted = false;
+let gameLoopRunning = false;
+
+let mapInitialized = false;
+const allFoods = [];
 
 const tileMap = [
   "XXXXXXXXXXXXXXXXXXX",
@@ -76,9 +68,21 @@ function preloadImages() {
     const img = new Image();
     img.src = url;
     if (img.decode) {
-      img.decode().catch(err => console.log("Image decode failed", err));
+      img.decode().catch(err => console.log("Image preload failed", err));
     }
   });
+}
+
+function startGameLoop() {
+  if (gameLoopRunning) return;
+  gameLoopRunning = true;
+  lastTime = performance.now();
+  gameTimeAccumulator = 0;
+  requestAnimationFrame(gameLoop);
+}
+
+function stopGameLoop() {
+  gameLoopRunning = false;
 }
 
 window.onload = function () {
@@ -89,10 +93,6 @@ window.onload = function () {
   loadMap();
 
   document.addEventListener("keydown", handleKeyDown);
-
-  lastTime = performance.now();
-  fpsLastTime = lastTime;
-  requestAnimationFrame(gameLoop);
 };
 
 function setupMenuListeners() {
@@ -100,6 +100,7 @@ function setupMenuListeners() {
     gameStarted = true;
     document.getElementById("start-screen").classList.add("hidden");
     resetGameCompletely();
+    startGameLoop();
   };
 
   document.getElementById("btn-continue").onclick = () => togglePause(false);
@@ -112,6 +113,7 @@ function setupMenuListeners() {
   document.getElementById("btn-gameover-restart").onclick = () => {
     document.getElementById("game-over-screen").classList.add("hidden");
     resetGameCompletely();
+    startGameLoop();
   };
 }
 
@@ -163,52 +165,47 @@ function loadMap() {
 }
 
 function gameLoop(currentTime) {
-  let deltaTime = currentTime - lastTime;
+  if (!gameLoopRunning) return;
 
+  let deltaTime = currentTime - lastTime;
   if (deltaTime > 100) deltaTime = 16.66;
   lastTime = currentTime;
 
-  frameCount++;
-  if (currentTime >= fpsLastTime + 1000) {
-    document.getElementById("fps-val").innerText = frameCount;
-    frameCount = 0;
-    fpsLastTime = currentTime;
-  }
-
   if (gameStarted && !isPaused && !gameOver) {
-    timeAccumulator += deltaTime;
     gameTimeAccumulator += deltaTime;
-
     if (gameTimeAccumulator >= 1000) {
       timeRemaining--;
-      gameTimeAccumulator -= 1000;
+      gameTimeAccumulator = 0;
       updateTimerDisplay();
       if (timeRemaining <= 0) {
         showGameOver();
+        return;
       }
     }
 
-    if (timeAccumulator > physicsStep * 5) {
-      timeAccumulator = physicsStep;
-    }
-
-    while (timeAccumulator >= physicsStep) {
-      updatePhysics();
-      timeAccumulator -= physicsStep;
-    }
-
-    // تشغيل الرندرة فقط إذا كانت اللعبة تعمل وغير متوقفة لحفظ الإطارات
+    updatePhysics();
     renderDOM();
   }
 
   requestAnimationFrame(gameLoop);
 }
 
+function updatePhysics() {
+  handlePacmanTurning();
+  handlePacmanMovement();
+  handleGhostMovement();
+  handleFoodCollision();
+
+  if (foods.size === 0) {
+    loadMap();
+    resetPositions();
+  }
+}
+
 function handleGhostMovement() {
   const mapWidth = columnCount * tileSize;
 
   for (let ghost of ghosts) {
-    // حل مشكلة الأداء: نتحقق أن الشبح يتحرك فعلياً وفي مركز البلاطة تماماً قبل حساب الذكاء الاصطناعي
     const isAtTileCenter = ghost.x % tileSize === 0 && ghost.y % tileSize === 0;
     const isMoving = ghost.velocityX !== 0 || ghost.velocityY !== 0;
 
@@ -220,9 +217,9 @@ function handleGhostMovement() {
     ghost.y += ghost.velocityY;
 
     if (ghost.x + ghost.width < 0) {
-      ghost.x = mapWidth - checkSpeedFallbackOffset(ghost.velocityX);
+      ghost.x = mapWidth - Math.abs(ghost.velocityX);
     } else if (ghost.x > mapWidth) {
-      ghost.x = -ghost.width + checkSpeedFallbackOffset(ghost.velocityX);
+      ghost.x = -ghost.width + Math.abs(ghost.velocityX);
     }
 
     for (let wall of walls) {
@@ -247,29 +244,11 @@ function handleGhostMovement() {
   }
 }
 
-function updatePhysics() {
-  handlePacmanTurning();
-  handlePacmanMovement();
-  handleGhostMovement();
-  handleFoodCollision();
-
-  if (foods.size === 0) {
-    loadMap();
-    resetPositions();
-  }
-}
-
 function handlePacmanTurning() {
-  let currentTileX =
-    Math.floor((pacman.x + tileSize / 2) / tileSize) * tileSize;
-  let currentTileY =
-    Math.floor((pacman.y + tileSize / 2) / tileSize) * tileSize;
+  let currentTileX = Math.floor((pacman.x + tileSize / 2) / tileSize) * tileSize;
+  let currentTileY = Math.floor((pacman.y + tileSize / 2) / tileSize) * tileSize;
 
-  // Check if we are approaching a tile center close enough to execute a buffered turn
-  if (
-    Math.abs(pacman.x - currentTileX) <= 4 &&
-    Math.abs(pacman.y - currentTileY) <= 4
-  ) {
+  if (Math.abs(pacman.x - currentTileX) <= 4 && Math.abs(pacman.y - currentTileY) <= 4) {
     if (pacmanNextDirection !== null) {
       let targetX = currentTileX;
       let targetY = currentTileY;
@@ -286,6 +265,7 @@ function handlePacmanTurning() {
         width: pacman.width,
         height: pacman.height,
       };
+
       let wallHit = false;
       for (let wall of walls) {
         if (collision(futureBlock, wall)) {
@@ -303,30 +283,23 @@ function handlePacmanTurning() {
     }
   }
 
-  // Update sprite animation orientations cleanly
-  if (pacman.direction === "U")
-    pacman.updateImage("./assets/imgs/pacmanUp.png");
-  else if (pacman.direction === "D")
-    pacman.updateImage("./assets/imgs/pacmanDown.png");
-  else if (pacman.direction === "L")
-    pacman.updateImage("./assets/imgs/pacmanLeft.png");
-  else if (pacman.direction === "R")
-    pacman.updateImage("./assets/imgs/pacmanRight.png");
+  if (pacman.direction === "U") pacman.updateImage("./assets/imgs/pacmanUp.png");
+  else if (pacman.direction === "D") pacman.updateImage("./assets/imgs/pacmanDown.png");
+  else if (pacman.direction === "L") pacman.updateImage("./assets/imgs/pacmanLeft.png");
+  else if (pacman.direction === "R") pacman.updateImage("./assets/imgs/pacmanRight.png");
 }
 
 function handlePacmanMovement() {
   pacman.x += pacman.velocityX;
   pacman.y += pacman.velocityY;
 
-  // --- TELEPORT WARPING SYSTEM FOR PACMAN ---
   const mapWidth = columnCount * tileSize;
   if (pacman.x + pacman.width < 0) {
-    pacman.x = mapWidth - checkSpeedFallbackOffset(pacman.velocityX);
+    pacman.x = mapWidth - Math.abs(pacman.velocityX);
   } else if (pacman.x > mapWidth) {
-    pacman.x = -pacman.width + checkSpeedFallbackOffset(pacman.velocityX);
+    pacman.x = -pacman.width + Math.abs(pacman.velocityX);
   }
 
-  // Standard wall correction fallback
   for (let wall of walls) {
     if (collision(pacman, wall)) {
       pacman.x -= pacman.velocityX;
@@ -348,10 +321,6 @@ function handleFoodCollision() {
       break;
     }
   }
-}
-
-function checkSpeedFallbackOffset(vel) {
-  return vel !== 0 ? Math.abs(vel) : 2;
 }
 
 function chooseBalancedDirection(ghost) {
@@ -434,17 +403,20 @@ function handleKeyDown(e) {
   }
 
   if (e.code === "ArrowUp" || e.code === "KeyW") pacmanNextDirection = "U";
-  else if (e.code === "ArrowDown" || e.code == "KeyS")
-    pacmanNextDirection = "D";
-  else if (e.code === "ArrowLeft" || e.code == "KeyA")
-    pacmanNextDirection = "L";
-  else if (e.code === "ArrowRight" || e.code == "KeyD")
-    pacmanNextDirection = "R";
+  else if (e.code === "ArrowDown" || e.code == "KeyS") pacmanNextDirection = "D";
+  else if (e.code === "ArrowLeft" || e.code == "KeyA") pacmanNextDirection = "L";
+  else if (e.code === "ArrowRight" || e.code == "KeyD") pacmanNextDirection = "R";
 }
 
 function togglePause(pauseState) {
   isPaused = pauseState;
   document.getElementById("pause-menu").classList.toggle("hidden", !isPaused);
+
+  if (isPaused) {
+    stopGameLoop();
+  } else {
+    startGameLoop();
+  }
 }
 
 function collision(a, b) {
@@ -467,8 +439,8 @@ function showGameOver() {
   document.getElementById("game-over-screen").classList.remove("hidden");
   document.getElementById("final-score").innerText = score;
   document.getElementById("pause-menu").classList.add("hidden");
+  stopGameLoop();
 }
-
 
 function resetPositions() {
   pacman.resetPosition();
@@ -491,7 +463,6 @@ function resetGameCompletely() {
   loadMap();
   resetPositions();
 }
-
 
 class DOMBlock {
   constructor(
@@ -534,17 +505,18 @@ class DOMBlock {
 
   changeDirection(dir) {
     this.direction = dir;
+    let speed = tileSize / 16;
     if (dir === "U") {
       this.velocityX = 0;
-      this.velocityY = -tileSize / 16;
+      this.velocityY = -speed;
     } else if (dir === "D") {
       this.velocityX = 0;
-      this.velocityY = tileSize / 16;
+      this.velocityY = speed;
     } else if (dir === "L") {
-      this.velocityX = -tileSize / 16;
+      this.velocityX = -speed;
       this.velocityY = 0;
     } else if (dir === "R") {
-      this.velocityX = tileSize / 16;
+      this.velocityX = speed;
       this.velocityY = 0;
     }
   }
