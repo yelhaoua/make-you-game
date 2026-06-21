@@ -16,6 +16,7 @@ export function updatePhysics() {
   handleGhostMovement();
 
   const foodEaten = handleFoodCollision();
+  
   const ghostCollided = checkGhostPacmanCollision();
 
   if (foods.size === 0) {

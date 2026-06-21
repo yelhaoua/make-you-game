@@ -1,3 +1,4 @@
+import { allpoints } from "./collision/foodCollision.js";
 import { stopGameLoop } from "./gameLoop.js";
 
 export default function updateTimerDisplay() {
@@ -11,7 +12,7 @@ export function showGameOver() {
   window.gameState.gameOver = true;
   document.getElementById("game-over-screen").classList.remove("hidden");
   document.getElementById("final-score").innerText =
-    window.gameState?.score || 0;
+    allpoints || 0;
   document.getElementById("pause-menu").classList.add("hidden");
   stopGameLoop();
 }
