@@ -3,7 +3,7 @@ import loadMap from "./map.js";
 import { resetPositions } from "./gameState.js";
 import handleKeyDown from "./controls.js";
 import updateTimerDisplay, { showGameOver } from "./ui.js";
-import { setBoardLayer } from "./state.js";
+import { setBoardLayer, setWallsLayer, setFoodsLayer, setPacmanLayer, setGhostsLayer } from "./state.js";
 
 const imageUrls = [
   "./assets/imgs/wall.png",
@@ -60,10 +60,19 @@ function resetGameCompletely() {
   loadMap();
   resetPositions();
 }
+setWallsLayer(document.getElementById("walls-layer"));
+setFoodsLayer(document.getElementById("foods-layer"));
+setPacmanLayer(document.getElementById("pacman-layer"));
+setGhostsLayer(document.getElementById("ghosts-layer"));
+
 
 window.onload = function () {
   const boardLayer = document.getElementById("board-layer");
   setBoardLayer(boardLayer);
+  setWallsLayer(document.getElementById("walls-layer"));
+  setFoodsLayer(document.getElementById("foods-layer"));
+  setPacmanLayer(document.getElementById("pacman-layer"));
+  setGhostsLayer(document.getElementById("ghosts-layer"));
 
   preloadImages();
   setupMenuListeners();

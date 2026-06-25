@@ -1,4 +1,9 @@
 export let boardLayer;
+export let wallsLayer;
+export let foodsLayer;
+export let pacmanLayer;
+export let ghostsLayer;
+
 export const walls = new Set();
 export const foods = new Set();
 export const ghosts = new Set();
@@ -16,6 +21,22 @@ export let isPaused = false;
 
 export function setBoardLayer(el) {
   boardLayer = el;
+}
+
+export function setWallsLayer(el) {
+  wallsLayer = el;
+}
+
+export function setFoodsLayer(el) {
+  foodsLayer = el;
+}
+
+export function setPacmanLayer(el) {
+  pacmanLayer = el;
+}
+
+export function setGhostsLayer(el) {
+  ghostsLayer = el;
 }
 
 export function setPacman(obj) {

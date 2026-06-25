@@ -8,6 +8,7 @@ export default class DOMBlock {
     imageSrc = null,
     width = tileSize,
     height = tileSize,
+    targetLayer = boardLayer,
   ) {
     this.x = x;
     this.y = y;
@@ -19,24 +20,31 @@ export default class DOMBlock {
     this.velocityX = 0;
     this.velocityY = 0;
     this.ghostType = "";
+    this.imageSrc = imageSrc;
+    this.isBgBlock = targetLayer && (targetLayer.id === "walls-layer" || targetLayer.id === "foods-layer");
 
-    this.domElement = document.createElement("div");
-    this.domElement.className = `element ${className}`;
-    this.domElement.style.width = `${this.width}px`;
-    this.domElement.style.height = `${this.height}px`;
+    if (!this.isBgBlock) {
+      this.domElement = document.createElement("div");
+      this.domElement.className = `element ${className}`;
+      this.domElement.style.width = `${this.width}px`;
+      this.domElement.style.height = `${this.height}px`;
 
-    if (imageSrc) {
-      this.updateImage(imageSrc);
+      if (imageSrc) {
+        this.updateImage(imageSrc);
+      }
+
+      this.render();
+      (targetLayer || boardLayer).appendChild(this.domElement);
     }
-
-    this.render();
-    boardLayer.appendChild(this.domElement);
   }
 
   updateImage(src) {
-    this.domElement.style.backgroundImage = `url('${src}')`;
-    this.domElement.style.backgroundSize = "contain";
-    this.domElement.style.backgroundRepeat = "no-repeat";
+    this.imageSrc = src;
+    if (!this.isBgBlock && this.domElement) {
+      this.domElement.style.backgroundImage = `url('${src}')`;
+      this.domElement.style.backgroundSize = "contain";
+      this.domElement.style.backgroundRepeat = "no-repeat";
+    }
   }
 
   changeDirection(dir) {
@@ -58,7 +66,9 @@ export default class DOMBlock {
   }
 
   render() {
-    this.domElement.style.transform = `translate3d(${this.x}px, ${this.y}px, 0px)`;
+    if (!this.isBgBlock && this.domElement) {
+      this.domElement.style.transform = `translate3d(${this.x}px, ${this.y}px, 0px)`;
+    }
   }
 
   resetPosition() {

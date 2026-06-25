@@ -1,239 +1,279 @@
-      body {
-          margin: 0;
-          padding: 0;
-          background: radial-gradient(circle, #1a0f30 0%, #08020f 100%);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 100vh;
-          overflow: hidden;
-          font-family: 'Outfit', sans-serif;
-      }
+body {
+  margin: 0;
+  padding: 0;
+  background: radial-gradient(circle, #1a0f30 0%, #08020f 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow: hidden;
+  font-family: "Outfit", sans-serif;
+}
 
-      #game-container {
-          position: relative;
-          width: 608px;
-          /* 19 columns * 32px */
-          height: 704px;
-          /* 21 rows * 32px + scoreboard offset */
-          background-color: black;
-          border: 4px solid #3b218f;
-          border-radius: 12px;
-          box-shadow: 0 0 30px rgba(121, 74, 255, 0.4), inset 0 0 15px rgba(121, 74, 255, 0.2);
-          user-select: none;
-          overflow: hidden;
-      }
+#game-container {
+  position: relative;
+  width: 608px;
+  /* 19 columns * 32px */
+  height: 704px;
+  /* 21 rows * 32px + scoreboard offset */
+  background-color: black;
+  border: 4px solid #3b218f;
+  border-radius: 12px;
+  box-shadow:
+    0 0 30px rgba(121, 74, 255, 0.4),
+    inset 0 0 15px rgba(121, 74, 255, 0.2);
+  user-select: none;
+  overflow: hidden;
+}
+#walls-layer,
+#foods-layer,
+#pacman-layer,
+#ghosts-layer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  will-change: transform;
+}
+#walls-layer {
+  z-index: 1;
+}
+#foods-layer {
+  z-index: 2;
+}
+#pacman-layer {
+  z-index: 3;
+}
+#ghosts-layer {
+  z-index: 4;
+}
+#scoreboard {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 32px;
+  background-color: #0c0817;
+  border-bottom: 2px solid #3b218f;
+  color: #00ffff;
+  font-family: "Orbitron", sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+}
 
-      #scoreboard {
-          display: flex;
-          justify-content: space-around;
-          align-items: center;
-          height: 32px;
-          background-color: #0c0817;
-          border-bottom: 2px solid #3b218f;
-          color: #00ffff;
-          font-family: 'Orbitron', sans-serif;
-          font-size: 14px;
-          font-weight: bold;
-          text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
-      }
+#scoreboard span {
+  color: #ff00ff;
+  text-shadow: 0 0 5px rgba(255, 0, 255, 0.5);
+}
 
-      #scoreboard span {
-          color: #ff00ff;
-          text-shadow: 0 0 5px rgba(255, 0, 255, 0.5);
-      }
+#board-layer {
+  position: relative;
+  width: 608px;
+  height: 672px;
+}
 
-      #board-layer {
-          position: relative;
-          width: 608px;
-          height: 672px;
-      }
+/* Base Element optimization using hardware accelerated transforms */
+.element {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+}
 
-      /* Base Element optimization using hardware accelerated transforms */
-      .element {
-          position: absolute;
-          width: 32px;
-          height: 32px;
-          will-change: transform;
-      }
+.wall {
+  background-image: url("../imgs/wall.png");
+  background-size: contain;
+}
 
-      .wall {
-          background-image: url("../imgs/wall.png");
-          background-size: contain;
-      }
+.food {
+  background-size: contain;
+  background-repeat: no-repeat;
+}
 
-      .food {
-          background-size: contain;
-          background-repeat: no-repeat;
-      }
+/* Menus and overlays using cheap composition variables */
+#start-screen,
+#pause-menu,
+#game-over-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #0c0817;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+  color: white;
+  transition: all 0.3s ease;
+}
 
-      /* Menus and overlays using cheap composition variables */
-      #start-screen, #pause-menu, #game-over-screen {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: #0c0817;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          z-index: 100;
-          color: white;
-          transition: all 0.3s ease;
-      }
+#start-screen.hidden,
+#pause-menu.hidden,
+#game-over-screen.hidden {
+  display: none !important;
+}
 
-      #start-screen.hidden, #pause-menu.hidden, #game-over-screen.hidden {
-          display: none !important;
-      }
+.menu-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 30px;
+  border-radius: 16px;
+  background: rgba(20, 10, 40, 0.65);
+  border: 2px solid #ff00ff;
+  box-shadow:
+    0 0 20px rgba(255, 0, 255, 0.3),
+    inset 0 0 10px rgba(255, 0, 255, 0.2);
+  max-width: 80%;
+}
 
-      .menu-content {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          padding: 30px;
-          border-radius: 16px;
-          background: rgba(20, 10, 40, 0.65);
-          border: 2px solid #ff00ff;
-          box-shadow: 0 0 20px rgba(255, 0, 255, 0.3), inset 0 0 10px rgba(255, 0, 255, 0.2);
-          max-width: 80%;
-      }
+#pause-menu .menu-content {
+  border-color: #00ffff;
+  box-shadow:
+    0 0 20px rgba(0, 255, 255, 0.3),
+    inset 0 0 10px rgba(0, 255, 255, 0.2);
+}
 
-      #pause-menu .menu-content {
-          border-color: #00ffff;
-          box-shadow: 0 0 20px rgba(0, 255, 255, 0.3), inset 0 0 10px rgba(0, 255, 255, 0.2);
-      }
+#game-over-screen .menu-content {
+  border-color: #ff0055;
+  box-shadow:
+    0 0 20px rgba(255, 0, 85, 0.3),
+    inset 0 0 10px rgba(255, 0, 85, 0.2);
+}
 
-      #game-over-screen .menu-content {
-          border-color: #ff0055;
-          box-shadow: 0 0 20px rgba(255, 0, 85, 0.3), inset 0 0 10px rgba(255, 0, 85, 0.2);
-      }
+.game-title {
+  font-family: "Press Start 2P", cursive;
+  font-size: 32px;
+  color: #ffff00;
+  margin: 0 0 10px 0;
+  text-shadow:
+    0 0 10px rgba(255, 255, 0, 0.8),
+    0 0 20px rgba(255, 255, 0, 0.5);
+  letter-spacing: 2px;
+}
 
-      .game-title {
-          font-family: 'Press Start 2P', cursive;
-          font-size: 32px;
-          color: #ffff00;
-          margin: 0 0 10px 0;
-          text-shadow: 0 0 10px rgba(255, 255, 0, 0.8), 0 0 20px rgba(255, 255, 0, 0.5);
-          letter-spacing: 2px;
-      }
+.game-over-title {
+  font-family: "Press Start 2P", cursive;
+  font-size: 32px;
+  color: #ff0055;
+  margin: 0 0 15px 0;
+  text-shadow:
+    0 0 10px rgba(255, 0, 85, 0.8),
+    0 0 20px rgba(255, 0, 85, 0.5);
+  animation: blink 1.5s infinite;
+}
 
-      .game-over-title {
-          font-family: 'Press Start 2P', cursive;
-          font-size: 32px;
-          color: #ff0055;
-          margin: 0 0 15px 0;
-          text-shadow: 0 0 10px rgba(255, 0, 85, 0.8), 0 0 20px rgba(255, 0, 85, 0.5);
-          animation: blink 1.5s infinite;
-      }
+.menu-title {
+  font-family: "Press Start 2P", cursive;
+  font-size: 28px;
+  color: #00ffff;
+  margin: 0 0 20px 0;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+}
 
-      .menu-title {
-          font-family: 'Press Start 2P', cursive;
-          font-size: 28px;
-          color: #00ffff;
-          margin: 0 0 20px 0;
-          text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
-      }
+.subtitle {
+  font-family: "Orbitron", sans-serif;
+  font-size: 14px;
+  color: #a19bb0;
+  letter-spacing: 4px;
+  margin-bottom: 30px;
+}
 
-      .subtitle {
-          font-family: 'Orbitron', sans-serif;
-          font-size: 14px;
-          color: #a19bb0;
-          letter-spacing: 4px;
-          margin-bottom: 30px;
-      }
+.controls-info {
+  font-family: "Outfit", sans-serif;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 15px 25px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 30px;
+  color: #e2dff0;
+  line-height: 1.6;
+  font-size: 14px;
+}
 
-      .controls-info {
-          font-family: 'Outfit', sans-serif;
-          background: rgba(0, 0, 0, 0.4);
-          padding: 15px 25px;
-          border-radius: 8px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          margin-bottom: 30px;
-          color: #e2dff0;
-          line-height: 1.6;
-          font-size: 14px;
-      }
+.control-header {
+  font-family: "Orbitron", sans-serif;
+  color: #00ffff;
+  font-weight: bold;
+  margin-top: 0;
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+}
 
-      .control-header {
-          font-family: 'Orbitron', sans-serif;
-          color: #00ffff;
-          font-weight: bold;
-          margin-top: 0;
-          margin-bottom: 10px;
-          letter-spacing: 2px;
-      }
+.score-display {
+  font-family: "Orbitron", sans-serif;
+  font-size: 20px;
+  margin: 10px 0 25px 0;
+  color: #ffffff;
+}
 
-      .score-display {
-          font-family: 'Orbitron', sans-serif;
-          font-size: 20px;
-          margin: 10px 0 25px 0;
-          color: #ffffff;
-      }
+.score-display span {
+  color: #ff00ff;
+  font-weight: 900;
+  font-size: 24px;
+  text-shadow: 0 0 8px rgba(255, 0, 255, 0.6);
+}
 
-      .score-display span {
-          color: #ff00ff;
-          font-weight: 900;
-          font-size: 24px;
-          text-shadow: 0 0 8px rgba(255, 0, 255, 0.6);
-      }
+button {
+  font-family: "Orbitron", sans-serif;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 12px 30px;
+  margin: 10px;
+  font-size: 15px;
+  cursor: pointer;
+  background: #120924;
+  color: #00ffff;
+  border: 2px solid #00ffff;
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+  transition: all 0.2s ease;
+}
 
-      button {
-          font-family: 'Orbitron', sans-serif;
-          font-weight: bold;
-          text-transform: uppercase;
-          letter-spacing: 1.5px;
-          padding: 12px 30px;
-          margin: 10px;
-          font-size: 15px;
-          cursor: pointer;
-          background: #120924;
-          color: #00ffff;
-          border: 2px solid #00ffff;
-          border-radius: 6px;
-          box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
-          transition: all 0.2s ease;
-      }
+button:hover {
+  background: #00ffff;
+  color: #120924;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+  transform: translateY(-2px);
+}
 
-      button:hover {
-          background: #00ffff;
-          color: #120924;
-          box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
-          transform: translateY(-2px);
-      }
+button:active {
+  transform: translateY(0);
+}
 
-      button:active {
-          transform: translateY(0);
-      }
+.pulse-btn {
+  border-color: #ffff00;
+  color: #ffff00;
+  box-shadow: 0 0 10px rgba(255, 255, 0, 0.2);
+  animation: pulse 2s infinite;
+}
 
-      .pulse-btn {
-          border-color: #ffff00;
-          color: #ffff00;
-          box-shadow: 0 0 10px rgba(255, 255, 0, 0.2);
-          animation: pulse 2s infinite;
-      }
+.pulse-btn:hover {
+  background: #ffff00;
+  color: #120924;
+  box-shadow: 0 0 20px rgba(255, 255, 0, 0.7);
+}
 
-      .pulse-btn:hover {
-          background: #ffff00;
-          color: #120924;
-          box-shadow: 0 0 20px rgba(255, 255, 0, 0.7);
-      }
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 0, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 255, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 0, 0);
+  }
+}
 
-      @keyframes pulse {
-          0% {
-              box-shadow: 0 0 0 0 rgba(255, 255, 0, 0.7);
-          }
-          70% {
-              box-shadow: 0 0 0 10px rgba(255, 255, 0, 0);
-          }
-          100% {
-              box-shadow: 0 0 0 0 rgba(255, 255, 0, 0);
-          }
-      }
-
-      @keyframes blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.4; }
-      }
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}

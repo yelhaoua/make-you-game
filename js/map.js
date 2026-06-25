@@ -1,5 +1,5 @@
 import DOMBlock from "./domBlock.js";
-import { walls, foods, ghosts, setBoardLayer, setPacman } from "./state.js";
+import { walls, foods, ghosts, setBoardLayer, setPacman, wallsLayer, foodsLayer, pacmanLayer, ghostsLayer } from "./state.js";
 import { rowCount, columnCount, tileSize, directions } from "./config.js";
 
 let mapInitialized = false;
@@ -7,6 +7,38 @@ const allFoods = [];
 
 export function initMapData(boardLayer) {
   setBoardLayer(boardLayer);
+}
+
+export function renderWalls() {
+  if (!wallsLayer) return;
+  const bgImages = [];
+  const bgPositions = [];
+  const bgSizes = [];
+  for (let wall of walls) {
+    bgImages.push(`url('${wall.imageSrc}')`);
+    bgPositions.push(`${wall.x}px ${wall.y}px`);
+    bgSizes.push(`${wall.width}px ${wall.height}px`);
+  }
+  wallsLayer.style.backgroundImage = bgImages.join(", ");
+  wallsLayer.style.backgroundPosition = bgPositions.join(", ");
+  wallsLayer.style.backgroundSize = bgSizes.join(", ");
+  wallsLayer.style.backgroundRepeat = "no-repeat";
+}
+
+export function renderFoods() {
+  if (!foodsLayer) return;
+  const bgImages = [];
+  const bgPositions = [];
+  const bgSizes = [];
+  for (let food of foods) {
+    bgImages.push(`url('${food.imageSrc}')`);
+    bgPositions.push(`${food.x}px ${food.y}px`);
+    bgSizes.push(`${food.width}px ${food.height}px`);
+  }
+  foodsLayer.style.backgroundImage = bgImages.join(", ");
+  foodsLayer.style.backgroundPosition = bgPositions.join(", ");
+  foodsLayer.style.backgroundSize = bgSizes.join(", ");
+  foodsLayer.style.backgroundRepeat = "no-repeat";
 }
 
 export default function loadMap() {
@@ -37,14 +69,17 @@ export default function loadMap() {
   if (mapInitialized) {
     foods.clear();
     for (let food of allFoods) {
-      food.domElement.style.display = "";
       foods.add(food);
     }
+    renderFoods();
     return;
   }
 
   const boardLayer = document.getElementById("board-layer");
-  boardLayer.innerHTML = "";
+  if (wallsLayer) wallsLayer.style.backgroundImage = "";
+  if (foodsLayer) foodsLayer.style.backgroundImage = "";
+  pacmanLayer.innerHTML = "";
+  ghostsLayer.innerHTML = "";
   walls.clear();
   foods.clear();
   ghosts.clear();
@@ -57,7 +92,7 @@ export default function loadMap() {
       const y = r * tileSize;
 
       if (tileChar === "X") {
-        const wall = new DOMBlock("wall", x, y, "./assets/imgs/wall.png");
+        const wall = new DOMBlock("wall", x, y, "./assets/imgs/wall.png", tileSize, tileSize, wallsLayer);
         walls.add(wall);
       } else if (["b", "o", "p", "r"].includes(tileChar)) {
         let ghostImg = "./assets/imgs/redGhost.png";
@@ -65,7 +100,7 @@ export default function loadMap() {
         if (tileChar === "o") ghostImg = "./assets/imgs/orangeGhost.png";
         if (tileChar === "p") ghostImg = "./assets/imgs/pinkGhost.png";
 
-        const ghost = new DOMBlock(`ghost g-${tileChar}`, x, y, ghostImg);
+        const ghost = new DOMBlock(`ghost g-${tileChar}`, x, y, ghostImg, tileSize, tileSize, ghostsLayer);
         ghost.ghostType = tileChar;
         ghosts.add(ghost);
         ghost.changeDirection(directions[Math.floor(Math.random() * 4)]);
@@ -75,6 +110,9 @@ export default function loadMap() {
           x,
           y,
           "./assets/imgs/pacmanRight.png",
+          tileSize,
+          tileSize,
+          pacmanLayer,
         );
         setPacman(pacman);
       } else if (tileChar === " ") {
@@ -85,11 +123,14 @@ export default function loadMap() {
           "./assets/imgs/cherry.png",
           12,
           12,
+          foodsLayer,
         );
         foods.add(food);
         allFoods.push(food);
       }
     }
   }
+  renderWalls();
+  renderFoods();
   mapInitialized = true;
 }
