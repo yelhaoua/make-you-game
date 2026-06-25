@@ -2,7 +2,7 @@ import { startGameLoop, stopGameLoop } from "./gameLoop.js";
 import loadMap from "./map.js";
 import { resetPositions } from "./gameState.js";
 import handleKeyDown from "./controls.js";
-import updateTimerDisplay, { showGameOver } from "./ui.js";
+import updateTimerDisplay, { showGameOver, showWinScreen } from "./ui.js";
 import { setBoardLayer, setWallsLayer, setFoodsLayer, setPacmanLayer, setGhostsLayer } from "./state.js";
 
 const imageUrls = [
@@ -101,17 +101,17 @@ function setupMenuListeners() {
     resetGameCompletely();
     startGameLoop();
   };
+
+  document.getElementById("btn-win-restart").onclick = () => {
+    document.getElementById("win-screen").classList.add("hidden");
+    resetGameCompletely();
+    startGameLoop();
+  };
 }
 
 function togglePause(pauseState) {
   window.gameState.isPaused = pauseState;
   document.getElementById("pause-menu").classList.toggle("hidden", !pauseState);
-
-  if (pauseState) {
-    stopGameLoop();
-  } else {
-    startGameLoop();
-  }
 }
 
 // Handle ghost collision with pacman
@@ -134,6 +134,7 @@ window.resetGamePositions = function () {
 // Expose functions for modules to use
 window.updateTimerDisplay = updateTimerDisplay;
 window.showGameOver = showGameOver;
+window.showWinScreen = showWinScreen;
 window.togglePause = togglePause;
 window.updateScore = updateScore;
 window.updateLives = updateLives;

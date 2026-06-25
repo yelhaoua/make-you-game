@@ -20,8 +20,8 @@ export function updatePhysics() {
   const ghostCollided = checkGhostPacmanCollision();
 
   if (foods.size === 0) {
-    loadMap();
-    return { mapReloaded: true, ghostCollided: false };
+    window.showWinScreen();
+    return { mapReloaded: false, ghostCollided: false };
   }
 
   return { ghostCollided, mapReloaded: false };

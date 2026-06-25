@@ -1,7 +1,6 @@
 import { pacman, foods } from "../state.js";
 import { collision } from "../collision.js";
 import { renderFoods } from "../map.js";
-export let allpoints
 
 export function handleFoodCollision() {
   let pointsEarned = 0;
@@ -17,9 +16,8 @@ export function handleFoodCollision() {
   }
 
   if (foodEaten) {
-    allpoints = (parseInt(document.getElementById("score-val").innerText) || 0) + pointsEarned;
-    document.getElementById("score-val").innerText = allpoints
-    }
+    window.updateScore(pointsEarned);
+  }
 
   return foodEaten;
 }

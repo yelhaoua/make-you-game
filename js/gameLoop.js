@@ -17,12 +17,26 @@ export function stopGameLoop() {
   gameLoopRunning = false;
 }
 
+let frameCount = 0;
+let lastFpsUpdateTime = 0;
+
 function gameLoop(currentTime) {
   if (!gameLoopRunning) return;
 
   let deltaTime = currentTime - lastTime;
   if (deltaTime > 100) deltaTime = 16.66;
   lastTime = currentTime;
+
+  frameCount++;
+  if (currentTime - lastFpsUpdateTime >= 500) {
+    const actualFps = Math.round((frameCount * 1000) / (currentTime - lastFpsUpdateTime));
+    const fpsVal = document.getElementById("fps-val");
+    if (fpsVal) {
+      fpsVal.innerText = actualFps;
+    }
+    frameCount = 0;
+    lastFpsUpdateTime = currentTime;
+  }
 
   if (
     window.gameState &&
