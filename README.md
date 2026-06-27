@@ -129,18 +129,6 @@ http://localhost:8000
 
 ---
 
-## 🎮 Controls
-
-| Key   | Action                         |
-| ----- | ------------------------------ |
-| ← →   | Move Left / Right              |
-| ↑ ↓   | Move Up / Down (if applicable) |
-| Space | Action / Shoot / Jump          |
-| Esc   | Pause Menu                     |
-| Enter | Confirm                        |
-
----
-
 ## ⚙️ Performance
 
 The game is optimized to:
@@ -153,38 +141,6 @@ The game is optimized to:
 - Minimize painting and compositing work
 
 Performance is verified using browser Developer Tools.
-
----
-
-## 📋 Mandatory Requirements
-
-- ✅ Vanilla JavaScript
-- ✅ HTML
-- ✅ CSS
-- ✅ No Canvas
-- ✅ No Frameworks
-- ✅ requestAnimationFrame
-- ✅ Keyboard controls
-- ✅ Pause menu
-- ✅ Restart
-- ✅ Continue
-- ✅ Timer
-- ✅ Score
-- ✅ Lives
-- ✅ 60 FPS
-
----
-
-## 🧪 Testing
-
-Use browser Developer Tools to monitor:
-
-- FPS
-- JavaScript execution time
-- Rendering performance
-- Layout updates
-- Paint flashing
-- Memory usage
 
 ---
 
@@ -205,6 +161,7 @@ Use browser Developer Tools to monitor:
 ## 👨‍💻 Author
 
 **Yaakoub Elhaouari**
+**Hichame Ait Benalla**
 
 Zone01 Oujda
 
