@@ -43,9 +43,14 @@ export function handlePacmanTurning() {
       }
 
       if (!wallHit) {
-        pacman.x = currentTileX;
-        pacman.y = currentTileY;
-        pacman.changeDirection(pacmanNextDirection);
+        if (
+          pacman.direction !== pacmanNextDirection ||
+          (pacman.velocityX === 0 && pacman.velocityY === 0)
+        ) {
+          pacman.x = currentTileX;
+          pacman.y = currentTileY;
+          pacman.changeDirection(pacmanNextDirection);
+        }
         setPacmanNextDirection(null);
       }
     }

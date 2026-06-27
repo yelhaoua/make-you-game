@@ -60,11 +60,6 @@ function resetGameCompletely() {
   loadMap();
   resetPositions();
 }
-setWallsLayer(document.getElementById("walls-layer"));
-setFoodsLayer(document.getElementById("foods-layer"));
-setPacmanLayer(document.getElementById("pacman-layer"));
-setGhostsLayer(document.getElementById("ghosts-layer"));
-
 
 window.onload = function () {
   const boardLayer = document.getElementById("board-layer");
