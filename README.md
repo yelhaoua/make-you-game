@@ -35,7 +35,7 @@ The main goal is to build a smooth and responsive game that maintains **60 FPS**
 
 This project is based on:
 
-> **(Replace with your chosen game)**
+> Pac-Man
 
 Examples:
 
